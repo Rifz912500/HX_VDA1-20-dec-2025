@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HX LOGISTICS • DASHBOARD</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --hx-red: #ff0033;
+            --hx-neon: #00ff9d;
+            --hx-purple: #9d00ff;
+            --hx-cyan: #00ffff;
+            --hx-dark: #0a0a0f;
+            --hx-panel: rgba(15, 15, 25, 0.95);
+            --hx-glow: rgba(255, 0, 51, 0.5);
+            --hx-glow-neon: rgba(0, 255, 157, 0.5);
+        }
+
+        body {
+            background: #000;
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            color: #fff;
+        }
+
+        /* Matrix Rain Background */
+        .matrix-bg {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #05050a 0%, #000000 100%);
+            z-index: -3;
+        }
+
+        .matrix-code {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            z-index: -2;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .matrix-line {
+            position: absolute;
+            font-family: 'Orbitron', monospace;
+            color: var(--hx-neon);
+            font-size: 14px;
+            white-space: nowrap;
+            animation: matrixFall linear infinite;
+            text-shadow: 0 0 5px var(--hx-neon);
+        }
+
+        @keyframes matrixFall {
+            0% { transform: translateY(-100px); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+
+        /* Glitch Effects */
+        .glitch-overlay {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                45deg,
+                transparent 49%,
+                var(--hx-red) 50%,
+                transparent 51%
+            );
+            background-size: 3px 3px;
+            opacity: 0.02;
+            z-index: -1;
+            animation: glitchScan 4s linear infinite;
+        }
+
+        @keyframes glitchScan {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(10px); }
+        }
+
+        /* Main Container */
+        .hx-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 10px;
+            gap: 10px;
+            position: relative;
+        }
+
+        /* Compact Header */
+        .hx-header {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 15px;
+            height: 70px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .hx-brand {
+            background: rgba(15, 15, 25, 0.9);
+            border: 2px solid var(--hx-red);
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px var(--hx-glow);
+        }
+
+        .brand-text {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--hx-red), var(--hx-cyan));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .hx-title {
+            background: rgba(15, 15, 25, 0.9);
+            border: 2px solid var(--hx-neon);
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
+        }
+
+        .title-main {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.4rem;
+            color: var(--hx-neon);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 3px;
+        }
+
+        .title-sub {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.9rem;
+            color: var(--hx-cyan);
+            letter-spacing: 2px;
+        }
+
+        .hx-period {
+            background: rgba(15, 15, 25, 0.9);
+            border: 2px solid var(--hx-purple);
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(157, 0, 255, 0.3);
+        }
+
+        .period-text {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            color: var(--hx-purple);
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        /* Main Content Area - Fixed Height */
+        .hx-main {
+            flex: 1;
+            display: flex;
+            gap: 15px;
+            min-height: 0; /* Crucial for flexbox overflow */
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Stats Panel - Fixed Height */
+        .hx-stats {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 0;
+        }
+
+        .stats-panel {
+            background: var(--hx-panel);
+            border: 2px solid var(--hx-red);
+            border-radius: 10px;
+            padding: 15px;
+            height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: 0 0 15px var(--hx-glow);
+            overflow: hidden;
+        }
+
+        .stats-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            color: var(--hx-cyan);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            height: 100%;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--hx-neon);
+            text-shadow: 0 0 10px var(--hx-glow-neon);
+            line-height: 1;
+            margin-bottom: 3px;
+        }
+
+        .stat-label {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.8rem;
+            color: var(--hx-cyan);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        /* Queue Panel - Fixed Height with Scroll */
+        .queue-panel {
+            background: var(--hx-panel);
+            border: 2px solid var(--hx-purple);
+            border-radius: 10px;
+            padding: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 15px rgba(157, 0, 255, 0.3);
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .queue-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            color: var(--hx-purple);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            text-align: center;
+            padding-bottom: 8px;
+            border-bottom: 2px solid rgba(157, 0, 255, 0.3);
+        }
+
+        .queue-list {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .queue-item {
+            background: rgba(30, 30, 40, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        .queue-item:hover {
+            background: rgba(50, 50, 60, 0.8);
+            border-color: var(--hx-cyan);
+            transform: translateX(-3px);
+        }
+
+        .queue-item.active {
+            background: rgba(255, 0, 51, 0.2);
+            border-color: var(--hx-red);
+            box-shadow: 0 0 10px var(--hx-glow);
+        }
+
+        .queue-name {
+            font-weight: 600;
+            color: #fff;
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+
+        .queue-id {
+            font-size: 0.8rem;
+            color: var(--hx-cyan);
+            font-family: 'Orbitron', monospace;
+        }
+
+        /* Main Display Panel - Fixed Height */
+        .hx-display {
+            flex: 2;
+            background: var(--hx-panel);
+            border: 2px solid var(--hx-neon);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
+            min-height: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .display-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.4rem;
+            color: var(--hx-neon);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(0, 255, 157, 0.3);
+        }
+
+        /* Courier Card - Compact Layout */
+        .courier-card {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-height: 0;
+        }
+
+        /* Card Header - Single Line */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid rgba(0, 255, 157, 0.2);
+        }
+
+        .courier-info {
+            flex: 2;
+        }
+
+        .courier-name {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--hx-red);
+            text-shadow: 0 0 10px var(--hx-glow);
+            margin-bottom: 3px;
+        }
+
+        .courier-id {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.9rem;
+            color: var(--hx-cyan);
+        }
+
+        .courier-date {
+            flex: 1;
+            text-align: right;
+        }
+
+        .date-label {
+            font-size: 0.9rem;
+            color: var(--hx-cyan);
+            margin-bottom: 3px;
+            display: block;
+        }
+
+        .date-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            color: var(--hx-purple);
+            text-shadow: 0 0 8px rgba(157, 0, 255, 0.5);
+        }
+
+        /* Stats Grid - 2x3 Layout */
+        .card-stats {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 10px;
+            min-height: 0;
+        }
+
+        .card-stat {
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(0, 255, 157, 0.1);
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .card-stat:hover {
+            border-color: var(--hx-cyan);
+            transform: translateY(-2px);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+
+        .stat-icon {
+            font-size: 1.2rem;
+            color: var(--hx-neon);
+            margin-bottom: 5px;
+        }
+
+        .stat-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.8rem;
+            color: var(--hx-cyan);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--hx-neon);
+            text-shadow: 0 0 8px var(--hx-glow-neon);
+        }
+
+        /* Valid Status */
+        .valid-status {
+            background: rgba(0, 40, 20, 0.6);
+            border: 2px solid var(--hx-neon);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .valid-label {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.1rem;
+            color: var(--hx-cyan);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .valid-text {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--hx-neon);
+            text-shadow: 0 0 15px var(--hx-glow-neon);
+            animation: validPulse 2s infinite alternate;
+        }
+
+        @keyframes validPulse {
+            from { text-shadow: 0 0 10px var(--hx-glow-neon); }
+            to { text-shadow: 0 0 20px var(--hx-glow-neon), 0 0 30px rgba(0, 255, 157, 0.5); }
+        }
+
+        /* Controls */
+        .hx-controls {
+            height: 60px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .control-btn {
+            background: var(--hx-panel);
+            border: 2px solid var(--hx-red);
+            border-radius: 8px;
+            color: var(--hx-red);
+            font-family: 'Orbitron', monospace;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .control-btn:hover {
+            background: var(--hx-red);
+            color: #000;
+            box-shadow: 0 0 15px var(--hx-glow);
+            transform: translateY(-2px);
+        }
+
+        .control-btn:nth-child(2) { border-color: var(--hx-cyan); color: var(--hx-cyan); }
+        .control-btn:nth-child(3) { border-color: var(--hx-purple); color: var(--hx-purple); }
+        .control-btn:nth-child(4) { border-color: var(--hx-neon); color: var(--hx-neon); }
+        .control-btn:nth-child(5) { border-color: #ff9900; color: #ff9900; }
+
+        .control-btn:nth-child(2):hover { background: var(--hx-cyan); color: #000; }
+        .control-btn:nth-child(3):hover { background: var(--hx-purple); color: #fff; }
+        .control-btn:nth-child(4):hover { background: var(--hx-neon); color: #000; }
+        .control-btn:nth-child(5):hover { background: #ff9900; color: #000; }
+
+        /* Progress Bar */
+        .progress-container {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--hx-red), var(--hx-purple), var(--hx-neon));
+            width: 0%;
+            transition: width 0.3s ease;
+            animation: progressShine 2s infinite linear;
+        }
+
+        @keyframes progressShine {
+            0% { background-position: -100px 0; }
+            100% { background-position: 100px 0; }
+        }
+
+        /* Notification */
+        .hx-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--hx-panel);
+            border: 2px solid var(--hx-red);
+            border-radius: 8px;
+            padding: 12px 20px;
+            color: var(--hx-red);
+            font-family: 'Orbitron', monospace;
+            font-size: 0.9rem;
+            box-shadow: 0 0 20px var(--hx-glow);
+            z-index: 1000;
+            max-width: 300px;
+            display: none;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--hx-red), var(--hx-purple));
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, var(--hx-purple), var(--hx-neon));
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 1600px) {
+            .brand-text { font-size: 1.5rem; }
+            .title-main { font-size: 1.2rem; }
+            .period-text { font-size: 1rem; }
+            .courier-name { font-size: 1.4rem; }
+            .stat-number { font-size: 1.4rem; }
+        }
+
+        @media (max-width: 1200px) {
+            .hx-header { grid-template-columns: 1fr 1fr; }
+            .hx-title { grid-column: span 2; }
+            .card-stats { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-height: 800px) {
+            .stats-panel { height: 120px; }
+            .queue-panel { padding: 10px; }
+            .hx-display { padding: 10px; }
+            .card-header { padding: 8px; }
+            .card-stat { padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Effects -->
+    <div class="matrix-bg"></div>
+    <div class="matrix-code" id="matrixCode"></div>
+    <div class="glitch-overlay"></div>
+
+    <!-- Main Container -->
+    <div class="hx-container">
+        <!-- Compact Header -->
+        <div class="hx-header">
+            <div class="hx-brand">
+                <div class="brand-text">HX LOGISTICS</div>
+            </div>
+            <div class="hx-title">
+                <div class="title-main">VDA VALIDATION REPORT</div>
+                <div class="title-sub">DAMMAM BRANCH • DEC 1-20 2025</div>
+            </div>
+            <div class="hx-period">
+                <div class="period-text">40 ACTIVE RIDERS</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="hx-main">
+            <!-- Left Stats Panel -->
+            <div class="hx-stats">
+                <div class="stats-panel">
+                    <div class="stats-title">PERFORMANCE METRICS</div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalTasks">12,969</div>
+                            <div class="stat-label">TOTAL TASKS</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="onTimeDelivered">12,925</div>
+                            <div class="stat-label">ON-TIME</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalCancellations">195</div>
+                            <div class="stat-label">CANCELLATIONS</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="validRiders">40</div>
+                            <div class="stat-label">VALID RIDERS</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Queue Panel -->
+                <div class="queue-panel">
+                    <div class="queue-title">RIDER QUEUE</div>
+                    <div class="queue-list" id="queueList">
+                        <!-- Queue items will be dynamically inserted -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Display -->
+            <div class="hx-display">
+                <div class="display-title">RIDER PERFORMANCE CARD</div>
+                <div class="courier-card" id="courierCard">
+                    <!-- Card content will be dynamically inserted -->
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="hx-controls">
+            <button class="control-btn" onclick="startAutoRotation()">▶ START</button>
+            <button class="control-btn" onclick="pauseAutoRotation()">⏸ PAUSE</button>
+            <button class="control-btn" onclick="previousRider()">◀ PREV</button>
+            <button class="control-btn" onclick="nextRider()">NEXT ▶</button>
+            <button class="control-btn" onclick="toggleValidEffect()">VALID FX</button>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="hx-notification" id="notification"></div>
+
+    <script>
+        // Rider Data
+        const riders = [
+            { id: "1741294331237204", name: "Waqar Butt", firstOnline: "2025-12-01", vda2: 20, vda: 20, shifts: 47, delivered: 359, onTime: 355, cancellations: 7 },
+            { id: "1741297833088368", name: "Sajid Gazi", firstOnline: "2025-12-01", vda2: 19, vda: 19, shifts: 44, delivered: 320, onTime: 318, cancellations: 7 },
+            { id: "1752674657060097", name: "Niazur Rahman", firstOnline: "2025-12-01", vda2: 19, vda: 18, shifts: 44, delivered: 261, onTime: 260, cancellations: 8 },
+            { id: "1752850869206891", name: "Shahid Ali", firstOnline: "2025-12-01", vda2: 19, vda: 19, shifts: 44, delivered: 368, onTime: 367, cancellations: 6 },
+            { id: "1752851053257661", name: "Muhammad Usman", firstOnline: "2025-12-01", vda2: 20, vda: 20, shifts: 47, delivered: 405, onTime: 404, cancellations: 7 },
+            { id: "1752854345237645", name: "Md Shawon", firstOnline: "2025-12-01", vda2: 20, vda: 19, shifts: 44, delivered: 256, onTime: 255, cancellations: 6 },
+            { id: "1752861845202293", name: "Ohiduzzaman Md", firstOnline: "2025-12-01", vda2: 19, vda: 19, shifts: 44, delivered: 351, onTime: 349, cancellations: 6 },
+            { id: "1753010380060444", name: "Md Hamayet", firstOnline: "2025-12-01", vda2: 20, vda: 20, shifts: 47, delivered: 349, onTime: 348, cancellations: 7 },
+            { id: "1755160035480576", name: "Mohammed Samer", firstOnline: "2025-12-01", vda2: 20, vda: 20, shifts: 47, delivered: 456, onTime: 456, cancellations: 0 },
+            { id: "1756027399088222", name: "Tanveer Nizami", firstOnline: "2025-12-01", vda2: 20, vda: 19, shifts: 45, delivered: 189, onTime: 178, cancellations: 0 },
+            { id: "1756730543202036", name: "Md Islam", firstOnline: "2025-12-01", vda2: 20, vda: 20, shifts: 47, delivered: 337, onTime: 337, cancellations: 7 },
+            { id: "1757847762257898", name: "Md Miazanur Rahman", firstOnline: "2025-12-01", vda2: 19, vda: 19, shifts: 44, delivered: 385, onTime: 383, cancellations: 6 },
+            { id: "1757848196206832", name: "Md Imdaul Rana", firstOnline: "2025-12-01", vda2: 20, vda: 20, shifts: 47, delivered: 402, onTime: 402, cancellations: 7 },
+            { id: "1757849759257578", name: "Jibran Dil", firstOnline: "2025-12-01", vda2: 20, vda: 20, shifts: 46, delivered: 306, onTime: 304, cancellations: 7 },
+            { id: "1757850128257866", name: "Rimon Miah", firstOnline: "2025-12-01", vda2: 20, vda: 19, shifts: 46, delivered: 489, onTime: 488, cancellations: 8 },
+            { id: "1757851452206433", name: "Fahimur Rahman", firstOnline: "2025-12-01", vda2: 20, vda: 20, shifts: 47, delivered: 229, onTime: 224, cancellations: 7 },
+            { id: "1757852028480391", name: "Mizanur Rahaman", firstOnline: "2025-12-01", vda2: 19, vda: 18, shifts: 43, delivered: 317, onTime: 317, cancellations: 6 },
+            { id: "1757853453257425", name: "Omair Anwar", firstOnline: "2025-12-01", vda2: 20, vda: 19, shifts: 44, delivered: 296, onTime: 293, cancellations: 1 },
+            { id: "1757853742257822", name: "Mehedi Hirdoy", firstOnline: "2025-12-01", vda2: 19, vda: 19, shifts: 44, delivered: 328, onTime: 325, cancellations: 6 },
+            { id: "1757855571237580", name: "Mohammed Islam", firstOnline: "2025-12-01", vda2: 20, vda: 20, shifts: 47, delivered: 308, onTime: 306, cancellations: 2 },
+            { id: "1757857510202377", name: "Sheikh Amin", firstOnline: "2025-12-01", vda2: 20, vda: 19, shifts: 44, delivered: 398, onTime: 398, cancellations: 6 },
+            { id: "1757858285088915", name: "Naimat Wahid", firstOnline: "2025-12-01", vda2: 20, vda: 20, shifts: 46, delivered: 366, onTime: 366, cancellations: 7 },
+            { id: "1757864523237321", name: "Helal Qaid", firstOnline: "2025-12-01", vda2: 20, vda: 20, shifts: 47, delivered: 436, onTime: 435, cancellations: 0 },
+            { id: "1757866077237391", name: "Mohamed Alahlasi", firstOnline: "2025-12-01", vda2: 19, vda: 19, shifts: 44, delivered: 375, onTime: 375, cancellations: 2 },
+            { id: "1757873644237827", name: "Hasan Miah", firstOnline: "2025-12-01", vda2: 20, vda: 20, shifts: 47, delivered: 327, onTime: 324, cancellations: 7 },
+            { id: "1757874237060891", name: "Hassan Awadalla", firstOnline: "2025-12-01", vda2: 20, vda: 19, shifts: 44, delivered: 335, onTime: 334, cancellations: 0 },
+            { id: "1758118599257110", name: "Md Shekder", firstOnline: "2025-12-01", vda2: 20, vda: 20, shifts: 47, delivered: 337, onTime: 337, cancellations: 7 },
+            { id: "1758132735237084", name: "Abdul Noman", firstOnline: "2025-12-01", vda2: 19, vda: 19, shifts: 44, delivered: 392, onTime: 390, cancellations: 0 },
+            { id: "1758133184088563", name: "Azaz Nahid", firstOnline: "2025-12-01", vda2: 19, vda: 18, shifts: 42, delivered: 337, onTime: 337, cancellations: 6 },
+            { id: "1758143378206921", name: "Md Gazi", firstOnline: "2025-12-01", vda2: 20, vda: 20, shifts: 46, delivered: 387, onTime: 386, cancellations: 7 },
+            { id: "1758181318202616", name: "Hudhaifa Nezar", firstOnline: "2025-12-01", vda2: 20, vda: 18, shifts: 42, delivered: 328, onTime: 327, cancellations: 0 },
+            { id: "1758561951088723", name: "Mohammed Al Hamasi", firstOnline: "2025-12-01", vda2: 20, vda: 20, shifts: 47, delivered: 394, onTime: 394, cancellations: 0 },
+            { id: "1758564099480647", name: "Yunes Saeed", firstOnline: "2025-12-01", vda2: 19, vda: 19, shifts: 44, delivered: 389, onTime: 386, cancellations: 6 },
+            { id: "1759426557480576", name: "Abdullah Al Hakimi", firstOnline: "2025-12-01", vda2: 19, vda: 19, shifts: 44, delivered: 430, onTime: 423, cancellations: 6 },
+            { id: "1760359980202834", name: "Badr Al Selmi", firstOnline: "2025-12-01", vda2: 20, vda: 20, shifts: 47, delivered: 357, onTime: 356, cancellations: 0 },
+            { id: "1764586663480238", name: "Md Rabbi", firstOnline: "2025-12-02", vda2: 19, vda: 19, shifts: 45, delivered: 179, onTime: 179, cancellations: 7 },
+            { id: "1764588293257013", name: "Hussein Alahlsi", firstOnline: "2025-12-07", vda2: 14, vda: 14, shifts: 34, delivered: 245, onTime: 243, cancellations: 0 },
+            { id: "1764763795206482", name: "Md Ail", firstOnline: "2025-12-07", vda2: 14, vda: 14, shifts: 35, delivered: 242, onTime: 240, cancellations: 7 },
+            { id: "1765374959202495", name: "Jamil Sarder", firstOnline: "2025-12-13", vda2: 8, vda: 8, shifts: 23, delivered: 156, onTime: 152, cancellations: 7 },
+            { id: "1766064954060797", name: "Amr Eid", firstOnline: "2025-12-20", vda2: 1, vda: 1, shifts: 3, delivered: 18, onTime: 18, cancellations: 1 }
+        ];
+
+        let currentIndex = 0;
+        let autoRotationInterval = null;
+        const displayDuration = 3500; // 3.5 seconds per rider
+        let validEffectActive = true;
+
+        // Initialize Matrix Effect
+        function initMatrixEffect() {
+            const matrixContainer = document.getElementById('matrixCode');
+            const symbols = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+            
+            for (let i = 0; i < 100; i++) {
+                const line = document.createElement('div');
+                line.className = 'matrix-line';
+                line.textContent = Array(50).fill(0).map(() => 
+                    symbols[Math.floor(Math.random() * symbols.length)]
+                ).join('');
+                line.style.left = `${Math.random() * 100}%`;
+                line.style.animationDuration = `${Math.random() * 10 + 5}s`;
+                line.style.animationDelay = `${Math.random() * 5}s`;
+                matrixContainer.appendChild(line);
+            }
+        }
+
+        // Calculate and display global stats
+        function calculateGlobalStats() {
+            const totalTasks = riders.reduce((sum, r) => sum + r.delivered, 0);
+            const totalOnTime = riders.reduce((sum, r) => sum + r.onTime, 0);
+            const totalCancellations = riders.reduce((sum, r) => sum + r.cancellations, 0);
+            
+            document.getElementById('totalTasks').textContent = totalTasks.toLocaleString();
+            document.getElementById('onTimeDelivered').textContent = totalOnTime.toLocaleString();
+            document.getElementById('totalCancellations').textContent = totalCancellations;
+        }
+
+        // Format date
+        function formatDate(dateStr) {
+            return new Date(dateStr).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        // Create rider card HTML
+        function createRiderCard(rider) {
+            const icons = ['VDA2', 'VDA', '📅', '📦', '⏰', '❌'];
+            const titles = ['VDA2', 'VDA', 'SHIFTS', 'DELIVERED', 'ON-TIME', 'CANCELLED'];
+            const values = [rider.vda2, rider.vda, rider.shifts, rider.delivered, rider.onTime, rider.cancellations];
+            
+            let statsHTML = '';
+            for (let i = 0; i < 6; i++) {
+                statsHTML += `
+                    <div class="card-stat">
+                        <div class="stat-icon">${icons[i]}</div>
+                        <div class="stat-title">${titles[i]}</div>
+                        <div class="stat-number">${values[i]}</div>
+                    </div>
+                `;
+            }
+            
+            return `
+                <div class="card-header">
+                    <div class="courier-info">
+                        <div class="courier-name">${rider.name}</div>
+                        <div class="courier-id">ID: ${rider.id}</div>
+                    </div>
+                    <div class="courier-date">
+                        <span class="date-label">FIRST ONLINE</span>
+                        <div class="date-value">${formatDate(rider.firstOnline)}</div>
+                    </div>
+                </div>
+                <div class="card-stats">
+                    ${statsHTML}
+                </div>
+                <div class="valid-status">
+                    <div class="valid-label">CURRENT STATUS</div>
+                    <div class="valid-text" id="validText">VALID</div>
+                </div>
+            `;
+        }
+
+        // Create queue item HTML
+        function createQueueItem(rider, index, isActive = false) {
+            return `
+                <div class="queue-item ${isActive ? 'active' : ''}" data-index="${index}">
+                    <div class="queue-name">${rider.name}</div>
+                    <div class="queue-id">${rider.id.substring(0, 8)}...</div>
+                </div>
+            `;
+        }
+
+        // Display rider
+        function displayRider(index) {
+            const cardContainer = document.getElementById('courierCard');
+            const queueList = document.getElementById('queueList');
+            const progressBar = document.getElementById('progressBar');
+            
+            // Update card
+            cardContainer.innerHTML = createRiderCard(riders[index]);
+            
+            // Update queue list
+            queueList.innerHTML = '';
+            riders.forEach((rider, i) => {
+                queueList.innerHTML += createQueueItem(rider, i, i === index);
+            });
+            
+            // Update progress bar
+            const progress = ((index + 1) / riders.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            
+            // Add click events to queue items
+            document.querySelectorAll('.queue-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const itemIndex = parseInt(item.getAttribute('data-index'));
+                    pauseAutoRotation();
+                    displayRider(itemIndex);
+                    currentIndex = itemIndex;
+                    showNotification(`Selected: ${riders[itemIndex].name}`);
+                });
+            });
+            
+            // Update valid text animation
+            const validText = document.getElementById('validText');
+            if (validEffectActive) {
+                validText.style.animationPlayState = 'running';
+            } else {
+                validText.style.animationPlayState = 'paused';
+            }
+            
+            // Show notification
+            showNotification(`${index + 1}/${riders.length}: ${riders[index].name}`);
+            
+            currentIndex = index;
+        }
+
+        // Show notification
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 2000);
+        }
+
+        // Start auto rotation
+        function startAutoRotation() {
+            if (autoRotationInterval) clearInterval(autoRotationInterval);
+            
+            displayRider(currentIndex);
+            autoRotationInterval = setInterval(() => {
+                currentIndex = (currentIndex + 1) % riders.length;
+                displayRider(currentIndex);
+            }, displayDuration);
+            
+            showNotification("Auto rotation STARTED");
+        }
+
+        // Pause auto rotation
+        function pauseAutoRotation() {
+            if (autoRotationInterval) {
+                clearInterval(autoRotationInterval);
+                autoRotationInterval = null;
+                showNotification("Rotation PAUSED");
+            }
+        }
+
+        // Previous rider
+        function previousRider() {
+            pauseAutoRotation();
+            currentIndex = (currentIndex - 1 + riders.length) % riders.length;
+            displayRider(currentIndex);
+        }
+
+        // Next rider
+        function nextRider() {
+            pauseAutoRotation();
+            currentIndex = (currentIndex + 1) % riders.length;
+            displayRider(currentIndex);
+        }
+
+        // Toggle valid effect
+        function toggleValidEffect() {
+            validEffectActive = !validEffectActive;
+            const validText = document.getElementById('validText');
+            
+            if (validEffectActive) {
+                validText.style.animationPlayState = 'running';
+                showNotification("VALID effect ON");
+            } else {
+                validText.style.animationPlayState = 'paused';
+                showNotification("VALID effect OFF");
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initMatrixEffect();
+            calculateGlobalStats();
+            displayRider(0);
+            
+            // Start auto rotation after 1 second
+            setTimeout(startAutoRotation, 1000);
+            
+            // Keyboard controls
+            document.addEventListener('keydown', (e) => {
+                switch(e.key) {
+                    case 'ArrowLeft':
+                        previousRider();
+                        break;
+                    case 'ArrowRight':
+                    case ' ':
+                        nextRider();
+                        break;
+                    case 'Escape':
+                        pauseAutoRotation();
+                        break;
+                    case 'Enter':
+                        startAutoRotation();
+                        break;
+                    case 'v':
+                    case 'V':
+                        toggleValidEffect();
+                        break;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
