@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام حساب مكافآت الخبرة - HORSE_X_LOGISTIC</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-bg: #0a0e17;
+            --card-bg: rgba(16, 23, 41, 0.85);
+            --neon-cyan: #00ffff;
+            --neon-magenta: #ff00ff;
+            --neon-yellow: #ffff00;
+            --text-white: #ffffff;
+            --text-gray: #a0aec0;
+            --gradient-cyan: linear-gradient(90deg, #00ffff, #0099ff);
+            --gradient-magenta: linear-gradient(90deg, #ff00ff, #ff0099);
+            --gradient-yellow: linear-gradient(90deg, #ffff00, #ffaa00);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Tahoma', 'Geneva', 'Verdana', sans-serif;
+        }
+
+        body {
+            background: var(--primary-bg);
+            color: var(--text-white);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            direction: rtl;
+            text-align: right;
+        }
+
+        /* شبكة الخلفية المتحركة */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(90deg, rgba(15, 25, 45, 0.8) 1px, transparent 1px),
+                linear-gradient(rgba(15, 25, 45, 0.8) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 25s linear infinite;
+            z-index: -2;
+        }
+
+        /* العناصر العائمة ثلاثية الأبعاد */
+        .floating-element {
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            animation: float 20s infinite linear;
+        }
+
+        .floating-element:nth-child(1) {
+            width: 250px;
+            height: 250px;
+            top: -100px;
+            left: -100px;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.15) 0%, transparent 70%);
+            animation-delay: 0s;
+            animation-duration: 35s;
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.3);
+        }
+
+        .floating-element:nth-child(2) {
+            width: 180px;
+            height: 180px;
+            bottom: -80px;
+            right: 10%;
+            background: radial-gradient(circle, rgba(255, 0, 255, 0.1) 0%, transparent 70%);
+            animation-delay: 7s;
+            animation-duration: 30s;
+            animation-direction: reverse;
+            box-shadow: 0 0 40px rgba(255, 0, 255, 0.2);
+        }
+
+        .floating-element:nth-child(3) {
+            width: 120px;
+            height: 120px;
+            top: 30%;
+            right: -60px;
+            background: radial-gradient(circle, rgba(255, 255, 0, 0.15) 0%, transparent 70%);
+            animation-delay: 14s;
+            animation-duration: 25s;
+            box-shadow: 0 0 30px rgba(255, 255, 0, 0.2);
+        }
+
+        /* ترويسة اللوحة */
+        .dashboard-header {
+            padding: 25px 40px 15px;
+            text-align: center;
+            position: relative;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .logo-container {
+            margin-bottom: 15px;
+        }
+
+        .main-logo {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #00ffff, #ff00ff, #ffff00);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 25px rgba(0, 255, 255, 0.6);
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            animation: neon-glow 3s ease-in-out infinite alternate;
+        }
+
+        .system-title {
+            font-size: 1.3rem;
+            color: var(--text-gray);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .company-name {
+            font-size: 1.1rem;
+            color: var(--neon-cyan);
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+        }
+
+        .real-time-badge {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--neon-cyan);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+            animation: pulse 2s infinite;
+        }
+
+        /* ملخص المستويات */
+        .level-summary {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            padding: 0 40px;
+            margin-bottom: 35px;
+            flex-wrap: wrap;
+        }
+
+        .level-summary-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px 30px;
+            position: relative;
+            border: 1px solid rgba(0, 255, 255, 0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+            min-width: 160px;
+            text-align: center;
+        }
+
+        .level-summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4), 0 0 25px rgba(0, 255, 255, 0.15);
+            border-color: rgba(0, 255, 255, 0.3);
+        }
+
+        .level-summary-card.active {
+            box-shadow: 0 0 30px currentColor;
+        }
+
+        .level-summary-card.level-a {
+            border-top: 4px solid #00ffff;
+        }
+
+        .level-summary-card.level-b {
+            border-top: 4px solid #0099ff;
+        }
+
+        .level-summary-card.level-c {
+            border-top: 4px solid #ffff00;
+        }
+
+        .level-summary-card.level-d {
+            border-top: 4px solid #ff0055;
+        }
+
+        .level-count {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .level-a .level-count {
+            background: var(--gradient-cyan);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .level-b .level-count {
+            color: #0099ff;
+        }
+
+        .level-c .level-count {
+            color: #ffff00;
+        }
+
+        .level-d .level-count {
+            color: #ff0055;
+        }
+
+        .level-label {
+            font-size: 1rem;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .level-deduction {
+            font-size: 0.9rem;
+            margin-top: 8px;
+            opacity: 0.8;
+        }
+
+        /* عناصر التحكم */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .search-container {
+            flex-grow: 1;
+            max-width: 500px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 14px 22px;
+            background: rgba(16, 23, 41, 0.9);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 12px;
+            color: var(--text-white);
+            font-size: 1rem;
+            transition: all 0.3s;
+            text-align: right;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            background: rgba(16, 23, 41, 0.9);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 10px;
+            color: var(--text-white);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(90deg, rgba(0, 255, 255, 0.2), rgba(255, 0, 255, 0.2));
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .filter-btn:hover:not(.active) {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+        }
+
+        /* شبكة السائقين */
+        .couriers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 25px;
+            padding: 0 40px 50px;
+        }
+
+        .courier-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(0, 255, 255, 0.1);
+            opacity: 0;
+            transform: translateY(25px);
+            animation: card-appear 0.5s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .courier-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 255, 255, 0.1);
+            border-color: rgba(0, 255, 255, 0.3);
+        }
+
+        .card-header {
+            padding: 22px 22px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .courier-info {
+            flex-grow: 1;
+            text-align: right;
+        }
+
+        .courier-name {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text-white);
+        }
+
+        .courier-id {
+            font-size: 0.85rem;
+            color: var(--text-gray);
+            font-family: monospace;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .level-badge {
+            padding: 8px 18px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .level-a .level-badge {
+            background: var(--gradient-cyan);
+            color: white;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+        }
+
+        .level-b .level-badge {
+            background: linear-gradient(90deg, #0099ff, #0066ff);
+            color: white;
+            box-shadow: 0 0 20px rgba(0, 153, 255, 0.4);
+        }
+
+        .level-c .level-badge {
+            background: var(--gradient-yellow);
+            color: #333;
+            box-shadow: 0 0 20px rgba(255, 255, 0, 0.4);
+        }
+
+        .level-d .level-badge {
+            background: linear-gradient(90deg, #ff0055, #ff0099);
+            color: white;
+            box-shadow: 0 0 20px rgba(255, 0, 85, 0.4);
+        }
+
+        .level-na .level-badge {
+            background: linear-gradient(90deg, #666, #999);
+            color: white;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        .card-body {
+            padding: 22px;
+            text-align: right;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .metric-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .metric-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            direction: ltr;
+            text-align: left;
+        }
+
+        /* قسم الخصم */
+        .deduction-section {
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 12px;
+            padding: 18px;
+            margin-top: 18px;
+            border-left: 4px solid;
+            border-right: none;
+            text-align: right;
+        }
+
+        .deduction-title {
+            font-size: 0.9rem;
+            color: var(--text-gray);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .deduction-amount {
+            font-size: 1.8rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .deduction-detail {
+            font-size: 0.9rem;
+            color: var(--text-gray);
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        /* أشرطة التقدم */
+        .progress-container {
+            margin-top: 18px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            width: 0;
+            transition: width 1.5s ease-out;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+            direction: rtl;
+        }
+
+        /* التذييل */
+        .dashboard-footer {
+            text-align: center;
+            padding: 25px 40px;
+            border-top: 1px solid rgba(0, 255, 255, 0.2);
+            color: var(--text-gray);
+            font-size: 0.85rem;
+        }
+
+        .company-info {
+            margin-bottom: 12px;
+            font-size: 1rem;
+            color: var(--neon-cyan);
+        }
+
+        .cycle-info {
+            background: rgba(0, 255, 255, 0.1);
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+
+        /* الرسوم المتحركة */
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(15px, 15px) rotate(5deg); }
+            50% { transform: translate(0, 30px) rotate(0deg); }
+            75% { transform: translate(-15px, 15px) rotate(-5deg); }
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        @keyframes neon-glow {
+            0% { text-shadow: 0 0 10px rgba(0, 255, 255, 0.6), 0 0 20px rgba(0, 255, 255, 0.4); }
+            100% { text-shadow: 0 0 15px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.6), 0 0 40px rgba(0, 255, 255, 0.4); }
+        }
+
+        @keyframes card-appear {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(0, 255, 255, 0.3); }
+            50% { box-shadow: 0 0 25px rgba(0, 255, 255, 0.5), 0 0 35px rgba(0, 255, 255, 0.3); }
+        }
+
+        /* التجاوب مع الأجهزة */
+        @media (max-width: 1100px) {
+            .couriers-grid {
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-header, .level-summary, .controls, .couriers-grid {
+                padding: 20px;
+            }
+            
+            .main-logo {
+                font-size: 2.2rem;
+            }
+            
+            .couriers-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-container {
+                max-width: 100%;
+            }
+            
+            .filter-buttons {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .level-summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .main-logo {
+                font-size: 1.8rem;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .level-summary-card {
+                min-width: 130px;
+                padding: 15px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- عناصر الخلفية -->
+    <div class="bg-grid"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+
+    <!-- ترويسة اللوحة -->
+    <header class="dashboard-header">
+        <div class="logo-container">
+            <h1 class="main-logo">HORSE_X_LOGISTIC</h1>
+            <p class="system-title">نظام حساب مكافآت الخبرة</p>
+            <p class="company-name">مؤسسة هورس إكس للخدمات اللوجستية (الدمام) • 2025</p>
+            <div class="real-time-badge">
+                <i class="fas fa-bolt"></i> تتبع الخصومات في الوقت الحقيقي • تحديثات مباشرة
+            </div>
+        </div>
+    </header>
+
+    <!-- ملخص المستويات -->
+    <div class="level-summary">
+        <div class="level-summary-card level-a active" data-level="A">
+            <div class="level-count" id="level-a-count">13</div>
+            <div class="level-label">المستوى A</div>
+            <div class="level-deduction">لا يوجد خصم • 2000 ريال</div>
+        </div>
+        <div class="level-summary-card level-b" data-level="B">
+            <div class="level-count" id="level-b-count">19</div>
+            <div class="level-label">المستوى B</div>
+            <div class="level-deduction">خصم 500 ريال • 1500 ريال</div>
+        </div>
+        <div class="level-summary-card level-c" data-level="C">
+            <div class="level-count" id="level-c-count">6</div>
+            <div class="level-label">المستوى C</div>
+            <div class="level-deduction">خصم 1000 ريال • 1000 ريال</div>
+        </div>
+        <div class="level-summary-card level-d" data-level="D">
+            <div class="level-count" id="level-d-count">2</div>
+            <div class="level-label">المستوى D</div>
+            <div class="level-deduction">لا يوجد مكافأة • 0 ريال</div>
+        </div>
+        <div class="level-summary-card" data-level="all">
+            <div class="level-count" style="color: var(--neon-magenta);">42</div>
+            <div class="level-label">إجمالي السائقين</div>
+            <div class="level-deduction">جميع المستويات</div>
+        </div>
+    </div>
+
+    <!-- عناصر التحكم -->
+    <div class="controls">
+        <div class="search-container">
+            <input type="text" class="search-box" id="searchInput" placeholder="🔍 بحث باسم السائق أو المعرف...">
+        </div>
+        <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="all">الجميع</button>
+            <button class="filter-btn" data-filter="A">المستوى A</button>
+            <button class="filter-btn" data-filter="B">المستوى B</button>
+            <button class="filter-btn" data-filter="C">المستوى C</button>
+            <button class="filter-btn" data-filter="D">المستوى D</button>
+            <button class="filter-btn" data-filter="na">غير معين</button>
+            <button class="filter-btn" data-filter="top">أفضل 10</button>
+        </div>
+    </div>
+
+    <!-- شبكة السائقين -->
+    <div class="couriers-grid" id="couriersContainer">
+        <!-- سيتم إضافة بطاقات السائقين هنا ديناميكيًا -->
+    </div>
+
+    <!-- التذييل -->
+    <footer class="dashboard-footer">
+        <div class="company-info">
+            🚚 <strong>مؤسسة هورس إكس للخدمات اللوجستية (الدمام)</strong> • نظام مكافآت الخبرة
+        </div>
+        <div class="cycle-info">
+            الدورة الفعالة: <strong>202512</strong> • نوع التوصيل: <strong>سيارة</strong> • إجمالي السائقين: <strong>42</strong>
+        </div>
+        <p>نظام تتبع الأداء في الوقت الحقيقي • الخصم: A=0 ريال, B=500 ريال, C=1000 ريال, D=2000 ريال</p>
+        <p>يتم تحديث اللوحة كل 30 ثانية • آخر تحديث: <span id="lastUpdate">الآن</span></p>
+    </footer>
+
+    <script>
+        // جميع بيانات السائقين الـ 42 من القائمة المقدمة
+        const couriersData = [
+            { id: "1758561951088723", name: "محمد الحماسي", level: "A", rank: 85, percentile: "3.26%", score: 1.000, baseReward: 2000, onTimeRate: "100.00%", dropOffRate: "100.00%", completionRate: "100.00%", volume: 417 },
+            { id: "1752854345237645", name: "مد شاوان", level: "A", rank: 622, percentile: "23.82%", score: 0.998594, baseReward: 2000, onTimeRate: "99.63%", dropOffRate: "100.00%", completionRate: "100.00%", volume: 271 },
+            { id: "1756027841257388", name: "عادل أحمد", level: "-", rank: "-", percentile: "0.00%", score: 0.500, baseReward: 0, onTimeRate: "0.00%", dropOffRate: "0.00%", completionRate: "100.00%", volume: 0 },
+            { id: "1741294331237204", name: "وقار بوت", level: "B", rank: 1474, percentile: "56.45%", score: 0.996162, baseReward: 1500, onTimeRate: "98.99%", dropOffRate: "100.00%", completionRate: "100.00%", volume: 397 },
+            { id: "1764763795206482", name: "مد أيل", level: "B", rank: 1167, percentile: "44.70%", score: 0.997150, baseReward: 1500, onTimeRate: "99.25%", dropOffRate: "100.00%", completionRate: "100.00%", volume: 267 },
+            { id: "1765374959202495", name: "جميل ساردار", level: "C", rank: 2360, percentile: "90.39%", score: 0.990006, baseReward: 1000, onTimeRate: "97.37%", dropOffRate: "100.00%", completionRate: "100.00%", volume: 190 },
+            { id: "1758132735237084", name: "عبد النعمان", level: "A", rank: 748, percentile: "28.65%", score: 0.998214, baseReward: 2000, onTimeRate: "99.53%", dropOffRate: "100.00%", completionRate: "100.00%", volume: 425 },
+            { id: "1757853453257425", name: "عمر أنور", level: "B", rank: 1382, percentile: "52.93%", score: 0.996466, baseReward: 1500, onTimeRate: "99.07%", dropOffRate: "100.00%", completionRate: "100.00%", volume: 321 },
+            { id: "1757851452206433", name: "فهيم الرحمن", level: "C", rank: 2200, percentile: "84.26%", score: 0.992248, baseReward: 1000, onTimeRate: "97.96%", dropOffRate: "100.00%", completionRate: "100.00%", volume: 245 },
+            { id: "1757857510202377", name: "شيخ أمين", level: "B", rank: 971, percentile: "37.19%", score: 0.997700, baseReward: 1500, onTimeRate: "100.00%", dropOffRate: "100.00%", completionRate: "99.54%", volume: 431 },
+            { id: "1760359980202834", name: "بدر السلمي", level: "B", rank: 997, percentile: "38.18%", score: 0.997624, baseReward: 1500, onTimeRate: "99.73%", dropOffRate: "100.00%", completionRate: "99.73%", volume: 370 },
+            { id: "1756748661480255", name: "عمرو عيد", level: "D", rank: 2484, percentile: "95.14%", score: 0.986710, baseReward: 0, onTimeRate: "97.45%", dropOffRate: "100.00%", completionRate: "99.28%", volume: 275 },
+            { id: "1756730543202036", name: "مد إسلام", level: "A", rank: 602, percentile: "23.06%", score: 0.998650, baseReward: 2000, onTimeRate: "100.00%", dropOffRate: "100.00%", completionRate: "99.73%", volume: 366 },
+            { id: "1757873644237827", name: "حسن مية", level: "C", rank: 2193, percentile: "83.99%", score: 0.992268, baseReward: 1000, onTimeRate: "99.11%", dropOffRate: "100.00%", completionRate: "99.13%", volume: 338 },
+            { id: "1757853742257822", name: "مهيدي هيردوي", level: "C", rank: 1882, percentile: "72.08%", score: 0.994470, baseReward: 1000, onTimeRate: "98.90%", dropOffRate: "100.00%", completionRate: "99.73%", volume: 363 },
+            { id: "1757850128257866", name: "ريمون مية", level: "B", rank: 1048, percentile: "40.14%", score: 0.997466, baseReward: 1500, onTimeRate: "99.82%", dropOffRate: "100.00%", completionRate: "99.63%", volume: 542 },
+            { id: "1764586663480238", name: "مد ربي", level: "B", rank: 1077, percentile: "41.25%", score: 0.997400, baseReward: 1500, onTimeRate: "100.00%", dropOffRate: "100.00%", completionRate: "99.48%", volume: 192 },
+            { id: "1755160035480576", name: "محمد سامر", level: "B", rank: 857, percentile: "32.82%", score: 0.997950, baseReward: 1500, onTimeRate: "100.00%", dropOffRate: "100.00%", completionRate: "99.59%", volume: 482 },
+            { id: "1766064954060797", name: "عمرو عيد", level: "-", rank: "-", percentile: "0.00%", score: 1.000, baseReward: 0, onTimeRate: "100.00%", dropOffRate: "100.00%", completionRate: "100.00%", volume: 61 },
+            { id: "1764588293257013", name: "حسين الأحلسي", level: "C", rank: 1945, percentile: "74.49%", score: 0.994096, baseReward: 1000, onTimeRate: "98.92%", dropOffRate: "100.00%", completionRate: "99.64%", volume: 277 },
+            { id: "1756027399088222", name: "تنوير نيزامي", level: "D", rank: 2599, percentile: "99.54%", score: 0.975284, baseReward: 0, onTimeRate: "94.18%", dropOffRate: "100.00%", completionRate: "99.48%", volume: 189 },
+            { id: "1758181318202616", name: "هديفة نظر", level: "A", rank: 492, percentile: "18.84%", score: 0.998936, baseReward: 2000, onTimeRate: "99.72%", dropOffRate: "100.00%", completionRate: "100.00%", volume: 361 },
+            { id: "1757849759257578", name: "جبران ديل", level: "B", rank: 990, percentile: "37.92%", score: 0.997644, baseReward: 1500, onTimeRate: "99.38%", dropOffRate: "100.00%", completionRate: "100.00%", volume: 322 },
+            { id: "1758143378206921", name: "مد غازي", level: "A", rank: 402, percentile: "15.40%", score: 0.999088, baseReward: 2000, onTimeRate: "99.76%", dropOffRate: "100.00%", completionRate: "100.00%", volume: 423 },
+            { id: "1752674657060097", name: "نياز الرحمن", level: "B", rank: 1295, percentile: "49.60%", score: 0.996744, baseReward: 1500, onTimeRate: "99.63%", dropOffRate: "100.00%", completionRate: "99.63%", volume: 270 },
+            { id: "1758118599257110", name: "مد شاكر", level: "A", rank: 600, percentile: "22.98%", score: 0.998650, baseReward: 2000, onTimeRate: "100.00%", dropOffRate: "100.00%", completionRate: "99.73%", volume: 371 },
+            { id: "1752851053257661", name: "محمد عثمان", level: "B", rank: 855, percentile: "32.75%", score: 0.997976, baseReward: 1500, onTimeRate: "99.77%", dropOffRate: "100.00%", completionRate: "99.77%", volume: 426 },
+            { id: "1752861845202293", name: "أحيد ظمان مد", level: "B", rank: 1674, percentile: "64.11%", score: 0.995424, baseReward: 1500, onTimeRate: "99.48%", dropOffRate: "100.00%", completionRate: "99.48%", volume: 382 },
+            { id: "1757848196206832", name: "مد إمضاول رانا", level: "B", rank: 1265, percentile: "48.45%", score: 0.996826, baseReward: 1500, onTimeRate: "99.77%", dropOffRate: "100.00%", completionRate: "99.54%", volume: 434 },
+            { id: "1757855571237580", name: "محمد إسلام", level: "B", rank: 1512, percentile: "57.91%", score: 0.996056, baseReward: 1500, onTimeRate: "99.37%", dropOffRate: "100.00%", completionRate: "99.69%", volume: 317 },
+            { id: "1757874237060891", name: "حسن عوض الله", level: "B", rank: 999, percentile: "38.26%", score: 0.997624, baseReward: 1500, onTimeRate: "99.73%", dropOffRate: "100.00%", completionRate: "99.73%", volume: 367 },
+            { id: "1757847762257898", name: "مد ميزان الرحمن", level: "A", rank: 748, percentile: "28.65%", score: 0.998214, baseReward: 2000, onTimeRate: "99.53%", dropOffRate: "100.00%", completionRate: "100.00%", volume: 425 },
+            { id: "1758133184088563", name: "عزاز ناهد", level: "A", rank: 137, percentile: "5.25%", score: 1.000, baseReward: 2000, onTimeRate: "100.00%", dropOffRate: "100.00%", completionRate: "100.00%", volume: 362 },
+            { id: "1757858285088915", name: "نعمة وحيد", level: "B", rank: 1456, percentile: "55.76%", score: 0.996200, baseReward: 1500, onTimeRate: "100.00%", dropOffRate: "100.00%", completionRate: "99.24%", volume: 393 },
+            { id: "1753010380060444", name: "مد حمایت", level: "A", rank: 452, percentile: "17.31%", score: 0.999012, baseReward: 2000, onTimeRate: "99.74%", dropOffRate: "100.00%", completionRate: "100.00%", volume: 384 },
+            { id: "1759426557480576", name: "عبد الله الحكيمي", level: "C", rank: 2214, percentile: "84.80%", score: 0.991974, baseReward: 1000, onTimeRate: "98.73%", dropOffRate: "100.00%", completionRate: "99.36%", volume: 471 },
+            { id: "1741297833088368", name: "ساجد غازي", level: "B", rank: 1419, percentile: "54.35%", score: 0.996346, baseReward: 1500, onTimeRate: "99.42%", dropOffRate: "100.00%", completionRate: "99.71%", volume: 344 },
+            { id: "1752850869206891", name: "شاهد علي", level: "A", rank: 429, percentile: "16.43%", score: 0.999050, baseReward: 2000, onTimeRate: "99.75%", dropOffRate: "100.00%", completionRate: "100.00%", volume: 407 },
+            { id: "1757852028480391", name: "ميزان الرحمن", level: "A", rank: 160, percentile: "6.13%", score: 1.000, baseReward: 2000, onTimeRate: "100.00%", dropOffRate: "100.00%", completionRate: "100.00%", volume: 337 },
+            { id: "1757864523237321", name: "هلال قايد", level: "A", rank: 667, percentile: "25.55%", score: 0.998442, baseReward: 2000, onTimeRate: "99.59%", dropOffRate: "100.00%", completionRate: "100.00%", volume: 483 },
+            { id: "1757866077237391", name: "محمد الأحلسي", level: "B", rank: 1638, percentile: "62.73%", score: 0.995538, baseReward: 1500, onTimeRate: "99.76%", dropOffRate: "100.00%", completionRate: "99.29%", volume: 418 },
+            { id: "1758564099480647", name: "يونس سعيد", level: "B", rank: 1158, percentile: "44.35%", score: 0.997188, baseReward: 1500, onTimeRate: "99.26%", dropOffRate: "100.00%", completionRate: "100.00%", volume: 407 }
+        ];
+
+        // تهيئة اللوحة
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCouriers(couriersData);
+            setupEventListeners();
+            animateProgressBars();
+            updateLastUpdateTime();
+            
+            // أحداث النقر على ملخص المستويات
+            document.querySelectorAll('.level-summary-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const level = this.getAttribute('data-level');
+                    
+                    // تحديث الحالة النشطة
+                    document.querySelectorAll('.level-summary-card').forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // تحديث أزرار الفلترة
+                    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                    const filterBtn = document.querySelector(`.filter-btn[data-filter="${level === 'all' ? 'all' : level}"]`);
+                    if (filterBtn) filterBtn.classList.add('active');
+                    
+                    filterCouriers(level === 'all' ? 'all' : level);
+                });
+            });
+        });
+
+        // عرض جميع بطاقات السائقين الـ 42
+        function renderCouriers(couriers) {
+            const container = document.getElementById('couriersContainer');
+            container.innerHTML = '';
+            
+            couriers.forEach((courier, index) => {
+                const card = document.createElement('div');
+                const levelClass = courier.level === '-' ? 'na' : courier.level.toLowerCase();
+                card.className = `courier-card level-${levelClass}`;
+                card.style.animationDelay = `${index * 0.03}s`;
+                
+                // حساب الخصم بناءً على المستوى
+                let deduction = 0;
+                let deductionText = "";
+                
+                switch(courier.level) {
+                    case "A":
+                        deduction = 0;
+                        deductionText = "لا يوجد خصم";
+                        break;
+                    case "B":
+                        deduction = 500;
+                        deductionText = "خصم 500 ريال";
+                        break;
+                    case "C":
+                        deduction = 1000;
+                        deductionText = "خصم 1000 ريال";
+                        break;
+                    case "D":
+                        deduction = 2000;
+                        deductionText = "خصم كامل (لا توجد مكافأة)";
+                        break;
+                    default:
+                        deduction = 0;
+                        deductionText = "غير معين";
+                }
+                
+                const actualReward = courier.baseReward - deduction;
+                
+                // حساب نسبة التقدم بناءً على الدرجة
+                const progressPercent = Math.min(100, Math.max(10, courier.score * 100));
+                
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="courier-info">
+                            <div class="courier-name">${courier.name}</div>
+                            <div class="courier-id">${courier.id}</div>
+                        </div>
+                        <div class="level-badge">
+                            ${courier.level === '-' ? 'N/A' : courier.level}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="metrics-grid">
+                            <div class="metric-item">
+                                <div class="metric-label">الترتيب</div>
+                                <div class="metric-value">${courier.rank}</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">النسبة المئوية</div>
+                                <div class="metric-value">${courier.percentile}</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">درجة الخبرة</div>
+                                <div class="metric-value">${courier.score.toFixed(4)}</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">حجم الطلبات</div>
+                                <div class="metric-value">${courier.volume}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- قسم حساب المكافأة -->
+                        <div class="deduction-section" style="border-left-color: ${courier.level === 'A' ? '#00ffff' : courier.level === 'B' ? '#0099ff' : courier.level === 'C' ? '#ffff00' : courier.level === 'D' ? '#ff0055' : '#666'}">
+                            <div class="deduction-title">
+                                <i class="fas fa-money-bill-wave"></i> حساب المكافأة
+                            </div>
+                            <div class="deduction-amount">
+                                <span>${actualReward.toFixed(0)} ريال</span>
+                                <span style="font-size: 1rem; color: ${actualReward === 2000 ? '#00ff88' : actualReward >= 1000 ? '#ffff00' : '#ff0055'}">
+                                    ${courier.level === 'A' ? 'كاملة' : courier.level === 'B' ? 'جزئية' : courier.level === 'C' ? 'أساسية' : 'لا توجد'} مكافأة
+                                </span>
+                            </div>
+                            <div class="deduction-detail">
+                                الأساسي: ${courier.baseReward} ريال • ${deductionText}
+                            </div>
+                        </div>
+                        
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span>مؤشرات الأداء</span>
+                                <span>${progressPercent.toFixed(1)}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" 
+                                     style="background: ${courier.level === 'A' ? 'var(--gradient-cyan)' : 
+                                              courier.level === 'B' ? 'linear-gradient(90deg, #0099ff, #0066ff)' : 
+                                              courier.level === 'C' ? 'var(--gradient-yellow)' : 
+                                              courier.level === 'D' ? 'linear-gradient(90deg, #ff0055, #ff0099)' : 
+                                              'linear-gradient(90deg, #666, #999)'}; 
+                                            width: ${progressPercent}%">
+                                </div>
+                            </div>
+                            <div class="progress-label">
+                                <span><i class="fas fa-clock"></i> ${courier.onTimeRate}</span>
+                                <span><i class="fas fa-check-circle"></i> ${courier.completionRate}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        // إعداد مستمعي الأحداث
+        function setupEventListeners() {
+            // أزرار الفلترة
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // إزالة الحالة النشطة من جميع الأزرار
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    // إضافة الحالة النشطة للزر المنقر
+                    this.classList.add('active');
+                    
+                    // تحديث الحالة النشطة لملخص المستويات
+                    const filter = this.getAttribute('data-filter');
+                    document.querySelectorAll('.level-summary-card').forEach(card => {
+                        card.classList.remove('active');
+                        if (card.getAttribute('data-level') === filter || 
+                            (filter === 'all' && card.getAttribute('data-level') === 'all') ||
+                            (filter === 'na' && card.getAttribute('data-level') === 'all') ||
+                            (filter === 'top' && card.getAttribute('data-level') === 'all')) {
+                            card.classList.add('active');
+                        }
+                    });
+                    
+                    filterCouriers(filter);
+                });
+            });
+            
+            // حقل البحث
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const filtered = couriersData.filter(courier => 
+                    courier.name.toLowerCase().includes(searchTerm) || 
+                    courier.id.includes(searchTerm)
+                );
+                renderCouriers(filtered);
+                animateProgressBars();
+            });
+        }
+
+        // فلترة السائقين
+        function filterCouriers(filter) {
+            let filtered;
+            
+            switch(filter) {
+                case 'all':
+                    filtered = couriersData;
+                    break;
+                case 'A':
+                    filtered = couriersData.filter(c => c.level === 'A');
+                    break;
+                case 'B':
+                    filtered = couriersData.filter(c => c.level === 'B');
+                    break;
+                case 'C':
+                    filtered = couriersData.filter(c => c.level === 'C');
+                    break;
+                case 'D':
+                    filtered = couriersData.filter(c => c.level === 'D');
+                    break;
+                case 'na':
+                    filtered = couriersData.filter(c => c.level === '-');
+                    break;
+                case 'top':
+                    // أفضل 10 حسب الترتيب (أقل رقم هو الأفضل)
+                    filtered = [...couriersData]
+                        .filter(c => c.rank !== '-')
+                        .sort((a, b) => parseInt(a.rank) - parseInt(b.rank))
+                        .slice(0, 10);
+                    break;
+                default:
+                    filtered = couriersData;
+            }
+            
+            renderCouriers(filtered);
+            animateProgressBars();
+        }
+
+        // تحريك أشرطة التقدم
+        function animateProgressBars() {
+            // الانتظار حتى يتم عرض البطاقات
+            setTimeout(() => {
+                const progressBars = document.querySelectorAll('.progress-fill');
+                progressBars.forEach(bar => {
+                    const width = bar.style.width;
+                    bar.style.width = '0';
+                    setTimeout(() => {
+                        bar.style.width = width;
+                    }, 100);
+                });
+            }, 300);
+        }
+
+        // تحديث وقت آخر تحديث
+        function updateLastUpdateTime() {
+            const now = new Date();
+            const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+            document.getElementById('lastUpdate').textContent = timeString;
+            
+            // تحديث كل 30 ثانية
+            setInterval(() => {
+                const newNow = new Date();
+                const newTimeString = `${newNow.getHours().toString().padStart(2, '0')}:${newNow.getMinutes().toString().padStart(2, '0')}:${newNow.getSeconds().toString().padStart(2, '0')}`;
+                document.getElementById('lastUpdate').textContent = newTimeString;
+            }, 30000);
+        }
+    </script>
+</body>
+</html>
